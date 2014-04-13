@@ -1,0 +1,16 @@
+OASISFormat: 0.4
+Name:        mpmw 
+Version:     0.1
+License:     GPL
+LicenseFile: LICENSE.txt
+Authors:     Carmelo Piccione
+Synopsis:    Multipurpose middleware for OCaml 
+BuildTools:  ocamlbuild
+Plugins: META (0.4)
+
+Library mpmw
+  Path:               lib
+  Pack:               true
+  Modules:            Bin_prot_utils, Remote_context, Remote_invoker, Remote_responder, Cache
+  BuildDepends:       unix, threads, lwt, lwt.syntax, rpclib, ZMQ, bigarray, core, riak, pcre, deriving-ocsigen, deriving-ocsigen.syntax_tc, js_of_ocaml.deriving, bin_prot, bin_prot.syntax
+  FindLibName:        mpmw
