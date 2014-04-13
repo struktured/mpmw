@@ -19,9 +19,9 @@ let respond responder =
   while true do
     let request_as_string = recv responder.responder in
     print_endline ("request: " ^ request_as_string);
-    let request = responder.request_serializer.from_string request_as_string in
+    let request = make_from_string responder.request_serializer request_as_string in
     let response, state = responder.callback request (!state_ref) in 
-    let response_as_string = responder.response_serializer.to_string response in
+    let response_as_string = make_to_string responder.response_serializer response in
     print_endline ("response: " ^ response_as_string);
     send responder.responder response_as_string;
     state_ref := state

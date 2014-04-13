@@ -15,8 +15,8 @@ let create ~context ~channel ~request_serializer
     print_endline ("created remote invoker");invoker
 
 let invoke invoker req = 
-  send invoker.requester (invoker.request_serializer.to_string req);
-  let response = recv invoker.requester in (invoker.response_serializer.from_string response)
+  send invoker.requester (make_to_string invoker.request_serializer req);
+  let response = recv invoker.requester in (make_from_string invoker.response_serializer response)
 
 let destroy invoker = close invoker.requester
 

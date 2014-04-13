@@ -7,7 +7,12 @@ open Core.Std
 type 'a to_string = 'a -> string
 type 'a from_string = string -> 'a
 
-type 'a string_serializer = {to_string:'a to_string; from_string: 'a from_string}
+type 'a bin_write_type = buf -> pos:int -> 'a -> int
+type 'a bin_read_type = buf -> pos_ref:pos_ref -> 'a
+
+type 'a string_serializer = {write_fun:'a bin_write_type; read_fun: 'a bin_read_type}
+
+let create ~read_fun ~write_fun = {write_fun;read_fun}
 
 let rec fill chars buf pos = match chars with [] -> buf | hd::rest -> let i = bin_write_char buf pos hd in (fill rest buf i);;
 let serialize_as_chars buf l' = let rec iter z = let c = (bin_read_char buf ~pos_ref:z) in [(c)]@(if (!z) < l' then (iter z) else []) in iter (ref 0);;
@@ -30,3 +35,8 @@ let string_to_chars s = String.fold s ~init:[] ~f:(fun l c -> l@[c])
 let from_string from_buf value = 
   let pos_ref = refPos () in
   let buf = fill (string_to_chars value) (create_max_size_buf ()) start_pos in from_buf buf ~pos_ref
+
+let make_to_string string_serializer = to_string string_serializer.write_fun
+
+let make_from_string string_serializer = from_string string_serializer.read_fun
+

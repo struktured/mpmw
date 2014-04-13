@@ -14,7 +14,7 @@ let create ~context ~channel ~serializer =
   {context;publisher;serializer}
 
 let publish publisher ~data =
-    let serialized_data = publisher.serializer.to_string data in
+    let serialized_data = Bin_prot_utils.make_to_string publisher.serializer data in
     print_endline ("data: " ^ serialized_data);
     Socket.send publisher.publisher serialized_data
 
