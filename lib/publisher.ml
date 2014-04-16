@@ -6,10 +6,10 @@ type 'a t = {context:Remote_context.t;publisher:([`Pub]) Socket.t;
  
 let create ~context ~channel ~serializer =
   print_endline ("about to create publisher for " ^ channel);
-  let socket = ZMQ.Socket.create (Remote_context.get()) ZMQ.Socket.pub in
+  let socket = ZMQ.Socket.create context ZMQ.Socket.pub in
   let publisher = Socket.of_socket socket in 
   print_endline ("binding to channel: " ^ channel);
-  ZMQ.Socket.bind socket channel;
+  ZMQ.Socket.bind socket channel; (* TODO is bind necessary here? *)
   print_endline ("bound channel" ^ channel);
   {context;publisher;serializer}
 
