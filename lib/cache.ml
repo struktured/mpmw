@@ -34,7 +34,7 @@ let create (key_serializer:'k string_serializer) (value_serializer:'v string_ser
   publisher=create_publisher bucket cache_operation_serializer;listeners=[]}
 
 let notify_listeners cache operation =
-  Publisher.publish cache.publisher ~data:operation
+  Publisher.publish cache.publisher ~channel:cache.name ~data:operation
 
 let setup_consumer cache = 
   ()
