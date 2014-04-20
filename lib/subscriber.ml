@@ -18,13 +18,14 @@ let create ~context ~address ~serializer =
 let topic_delim = ':'
 
 exception Missing_topic of string
+
 let subscribe subscriber ~topic ~f ~initial_state =
   ZMQ.Socket.subscribe (Socket.to_socket subscriber.socket) topic;
   let rec loop state = 
     lwt serialized_data_with_topic = Socket.recv subscriber.socket in
   match String.split ~on:topic_delim serialized_data_with_topic
   with
-    [topic';serialized_data] -> (* ssert_lwt (topic' = topic)); *)
+    [topic';serialized_data] -> assert (topic' = topic);
     let deserialized_data = Bin_prot_utils.make_from_string subscriber.serializer serialized_data in
     let state' = f deserialized_data state in loop state'
   | _-> raise (Missing_topic serialized_data_with_topic)
