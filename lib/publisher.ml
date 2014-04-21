@@ -8,7 +8,7 @@ type 'a t = {context:Remote_context.t;publisher:([`Pub]) Socket.t;
 let create ~context ~address ~serializer =
   let socket = ZMQ.Socket.create context ZMQ.Socket.pub in
   let publisher = Socket.of_socket socket in 
-  let (_:unit) = ZMQ.Socket.bind socket (* "tcp://*:6665" *) address in 
+  let (_:unit) = ZMQ.Socket.bind socket (Address.string_of_address address) in 
   {context;publisher;serializer}
 
 let topic_delim = ':' 

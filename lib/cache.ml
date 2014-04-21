@@ -14,7 +14,7 @@ type 'v entry_update = {old_value:'v;new_value:'v} with bin_io, show
 
 type ('k,'v) cache_operation = Insert of ('k, 'v) entry | Delete of ('k, 'v) entry | Update of 'k * 'v entry_update with bin_io, show
 
-type raw_cache_operation = (string,string) cache_operation
+type raw_cache_operation = (string,string) cache_operation with bin_io, show
   
 type ('k,'v) listener = ('k,'v) cache_operation -> unit 
 
@@ -27,12 +27,13 @@ lwt connection = riak_connect_with_defaults "localhost" 8087
 let channel_of_bucket bucket = bucket
 let create_publisher bucket serializer = Publisher.create (Remote_context.get()) (channel_of_bucket bucket) serializer 
 
-let subscriber_address = Address.create ~transport:Transport.EPGM ~endpoint:"192.168.1.1;239.155.155.1:5556"
+(* Provisional: need to make a resource file for this or something of that nature *)
+let socket_address = Address.create ~transport:Transport.EPGM ~endpoint:"eth0;239.192.1.1:5555"
 
 let setup_subscriber cache serializer = 
   let initial_state = () in
   let f operation state = List.iter cache.listeners (fun l -> l operation) in
-  let subscriber = Subscriber.create ~context:(Remote_context.get()) ~address:subscriber_address ~serializer in
+  let subscriber = Subscriber.create ~context:(Remote_context.get()) ~address:socket_address ~serializer in
   let result = Subscriber.subscribe subscriber ~topic:cache.bucket ~f ~initial_state in subscriber
 
 let create (key_serializer:'k string_serializer) (value_serializer:'v string_serializer) bucket =
@@ -40,7 +41,7 @@ let create (key_serializer:'k string_serializer) (value_serializer:'v string_ser
   let reader = bin_read_cache_operation key_serializer.read_fun value_serializer.read_fun in
   let cache_operation_serializer = Bin_prot_utils.create reader writer in 
   let cache = {connection;bucket;key_serializer;value_serializer;cache_operation_serializer;
-  publisher=create_publisher bucket cache_operation_serializer;listeners=[]} in
+  publisher=create_publisher socket_address cache_operation_serializer;listeners=[]} in
   let subscriber = setup_subscriber cache cache_operation_serializer in cache
 
 let notify_listeners cache operation =
