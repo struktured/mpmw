@@ -17,6 +17,7 @@ let create ~read_fun ~write_fun = {write_fun;read_fun}
 let rec fill chars buf pos = match chars with [] -> buf | hd::rest -> let i = bin_write_char buf pos hd in (fill rest buf i);;
 let serialize_as_chars buf l' = let rec iter z = let c = (bin_read_char buf ~pos_ref:z) in [(c)]@(if (!z) < l' then (iter z) else []) in iter (ref 0);;
 
+(* TODO tune the buffer size. Also, use Lwt thread local api to create only one per buffer per thread *)
 let max_buf_size = 131072
 let start_pos = 0
 
