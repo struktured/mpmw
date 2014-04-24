@@ -20,7 +20,7 @@ let validate topic = if String.contains topic topic_delim || String.is_empty top
 let publish publisher ~topic ~data =
   validate topic; 
   let serialized_data = Bin_prot_utils.make_to_string publisher.serializer data in
-  print_endline ("data: " ^ serialized_data);
+  Lwt.ignore_result (Lwt_io.printl ("data: " ^ serialized_data));
   Socket.send publisher.publisher (topic ^ (Char.to_string topic_delim) ^ serialized_data)
 
 let destroy publisher = ZMQ.Socket.close (Socket.to_socket publisher.publisher)

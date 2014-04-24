@@ -12,5 +12,5 @@ Library mpmw
   Path:               lib
   Pack:               true
   Modules:            Bin_prot_utils, Endpoint, Transport, Address, Remote_context, Remote_invoker, Remote_responder, Publisher, Subscriber, Cache
-  BuildDepends:       unix, threads, lwt, lwt.syntax, rpclib, ZMQ, lwt-zmq, bigarray, core, riak, pcre, deriving-ocsigen, deriving-ocsigen.syntax_tc, js_of_ocaml.deriving, bin_prot, bin_prot.syntax
+  BuildDepends:       unix, threads, lwt, lwt.preemptive, lwt.syntax, rpclib, ZMQ, lwt-zmq, bigarray, core, riak, pcre, deriving-ocsigen, deriving-ocsigen.syntax_tc, js_of_ocaml.deriving, bin_prot, bin_prot.syntax
   FindLibName:        mpmw

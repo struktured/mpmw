@@ -1,4 +1,4 @@
-open Riak
+open Riak 
 open Lwt
 open Bin_prot.Std
 open Bin_prot_utils
@@ -30,13 +30,18 @@ lwt connection = riak_connect_with_defaults "localhost" 8087
 let create_publisher address serializer = Publisher.create (Remote_context.get()) address serializer 
 
 (* Provisional: need to make a resource file for this or something of that nature *)
-let socket_address = Address.create ~transport:Transport.EPGM ~endpoint:"eth0;239.192.1.1:5555"
+(*let client_socket_address = Address.create ~transport:Transport.EPGM ~endpoint:"eth0;239.192.1.1:5555" *)
+
+let subscriber_socket_address = Address.create ~transport:Transport.TCP ~endpoint:"localhost:5555"
+
+let publisher_socket_address = Address.create ~transport:Transport.TCP ~endpoint:"*:5555"
+
 
 let setup_subscriber listener bucket serializer = 
   let initial_state = () in
   let f operation state = listener operation in
-  let subscriber = Subscriber.create ~context:(Remote_context.get()) ~address:socket_address ~serializer in
-  let result = Subscriber.subscribe subscriber ~topic:bucket ~f ~initial_state in subscriber
+  let subscriber = Subscriber.create ~context:(Remote_context.get()) ~address:subscriber_socket_address ~serializer in
+  let _ = Subscriber.subscribe subscriber ~topic:bucket ~f ~initial_state in subscriber
 
 let create ~(key_serializer:'k string_serializer) ~(value_serializer:'v string_serializer) ~(bucket:string) ?(listener=noop_listener) () =
   let writer = bin_write_cache_operation key_serializer.write_fun value_serializer.write_fun in
@@ -44,7 +49,7 @@ let create ~(key_serializer:'k string_serializer) ~(value_serializer:'v string_s
   let cache_operation_serializer = Bin_prot_utils.create reader writer in 
   let subscriber = setup_subscriber listener bucket cache_operation_serializer in
   let cache = {connection;bucket;key_serializer;value_serializer;cache_operation_serializer;
-  publisher=create_publisher socket_address cache_operation_serializer;subscriber} in cache
+  publisher=create_publisher publisher_socket_address cache_operation_serializer;subscriber} in cache
 
 let notify_listener cache operation =
   Publisher.publish cache.publisher ~topic:cache.bucket ~data:operation
