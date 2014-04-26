@@ -7,10 +7,11 @@ type ('a, 'b) t  = {context:Remote_context.t;requester:([`Req]) Socket.t;
 
 let get_context () = Remote_context.get()
 
-let create ~context ~channel ~request_serializer 
+let create ~context ~address ~request_serializer 
   ~response_serializer = 
     let requester = Socket.create context req in
-    connect requester channel;
+    let address_as_string = Address.string_of_address address in
+    connect requester address_as_string;
     let invoker = {context;requester;request_serializer;response_serializer} in
     print_endline ("created remote invoker");invoker
 
