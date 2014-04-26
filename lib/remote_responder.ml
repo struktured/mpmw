@@ -6,12 +6,12 @@ type ('a, 'b, 'c) t  = {context:Remote_context.t;responder:([`Rep]) Socket.t;
   request_serializer:('a string_serializer); response_serializer:('b string_serializer);
   initial_state:'c; callback:('a -> 'c -> 'b * 'c)}
 
-let create ~context ~channel ~request_serializer ~response_serializer ~initial_state ~callback =
-  print_endline ("about to create responder for " ^ channel);
+let create ~context ~address ~request_serializer ~response_serializer ~initial_state ~callback =
   let responder = Socket.create (Remote_context.get()) rep in
-  print_endline ("binding to channel: " ^ channel);
-  bind responder channel;
-  print_endline ("bound channel" ^ channel);
+  let address_as_string = Address.string_of_address address in 
+  print_endline ("binding to channel: " ^ address_as_string);
+  bind responder address_as_string;
+  print_endline ("bound channel" ^ address_as_string);
   {context;responder;request_serializer;response_serializer;initial_state;callback}
 
 let respond responder =

@@ -32,9 +32,9 @@ let create_publisher address serializer = Publisher.create (Remote_context.get()
 (* Provisional: need to make a resource file for this or something of that nature *)
 (*let client_socket_address = Address.create ~transport:Transport.EPGM ~endpoint:"eth0;239.192.1.1:5555" *)
 
-let subscriber_socket_address = Address.create ~transport:Transport.TCP ~endpoint:"localhost:5555"
+let subscriber_socket_address = Address.create ~transport:Transport.EPGM ~endpoint:"eth0;239.192.1.1;5556"
 
-let publisher_socket_address = Address.create ~transport:Transport.TCP ~endpoint:"*:5555"
+let publisher_socket_address = subscriber_socket_address
 
 
 let setup_subscriber listener bucket serializer = 
@@ -73,5 +73,3 @@ let get (cache:('k, 'v) cache) key =
                             | None -> None)
 
 let exists cache key = lwt result = (get cache key) in Lwt.return(not (result = None))
-
-let destroy cache = Subscriber.destroy cache.subscriber
