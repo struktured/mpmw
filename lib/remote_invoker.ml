@@ -1,6 +1,7 @@
 open Bin_prot_utils
 open ZMQ
 open ZMQ.Socket
+open Core.Std
 
 type ('a, 'b) t  = {context:Remote_context.t;requester:([`Req]) Socket.t; 
   request_serializer:('a string_serializer); response_serializer:('b string_serializer)}

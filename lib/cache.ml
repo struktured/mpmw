@@ -36,7 +36,6 @@ let subscriber_socket_address = Address.create ~transport:Transport.EPGM ~endpoi
 
 let publisher_socket_address = subscriber_socket_address
 
-
 let setup_subscriber listener bucket serializer = 
   let initial_state = () in
   let f operation state = listener operation in

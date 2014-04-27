@@ -1,0 +1,11 @@
+(* Added by OPAM. *)
+let () =
+  try Topdirs.dir_directory (Sys.getenv "OCAML_TOPLEVEL_PATH")
+  with Not_found -> ()
+;;
+#require "mpmw";;
+
+open Mpmw;;
+
+open Core.Std;;
+open Bin_prot.Std;;
