@@ -4,18 +4,10 @@ open ZMQ.Socket
 
 type ('a, 'b, 'c) t  = {context:Remote_context.t;responder:([`Rep]) Socket.t; 
   request_serializer:('a string_serializer); response_serializer:('b string_serializer);
-  initial_state:'c; callback:('a -> 'c -> 'b * 'c)}
+  callback:('a -> 'c -> 'b * 'c); thread:unit Lwt.t option}
 
-let create ~context ~address ~request_serializer ~response_serializer ~initial_state ~callback =
-  let responder = Socket.create (Remote_context.get()) rep in
-  let address_as_string = Address.string_of_address address in 
-  print_endline ("binding to channel: " ^ address_as_string);
-  bind responder address_as_string;
-  print_endline ("bound channel" ^ address_as_string);
-  {context;responder;request_serializer;response_serializer;initial_state;callback}
-
-let respond responder =
-  let state_ref = ref responder.initial_state in 
+let respond responder initial_state =
+  let state_ref = ref initial_state in 
   while true do
     let request_as_string = recv responder.responder in
     print_endline ("request: " ^ request_as_string);
@@ -27,5 +19,15 @@ let respond responder =
     state_ref := state
   done
 
-let destroy responder = close responder.responder
+let create ~context ~address ~request_serializer ~response_serializer ~initial_state ~callback =
+  let responder = Socket.create (Remote_context.get()) rep in
+  let address_as_string = Address.string_of_address address in 
+  print_endline ("binding to address: " ^ address_as_string);
+  bind responder address_as_string;
+  print_endline ("bound address: " ^ address_as_string);
+  let responder = {context;responder;request_serializer;response_serializer;callback;thread=None} in
+  let thread' = Some (Lwt_preemptive.detach (respond responder) initial_state) in
+  let responder' = {responder with thread=thread'} in responder'
+
+let destroy responder = (match responder.thread with Some t -> Lwt.cancel t | None -> ()) ; close responder.responder
 
