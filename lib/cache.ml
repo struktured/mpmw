@@ -23,7 +23,7 @@ let create_entry ~(key:'k) ~(value:'v) = {key;value}
 
 type ('k, 'v) t = {connection:riak_connection; bucket:string; 
   publisher:raw_cache_operation Publisher.t;key_serializer:'k string_serializer;
-  value_serializer:('v string_serializer);cache_operation_serializer:('k, 'v) cache_operation string_serializer;subscriber:raw_cache_operation Subscriber.t}
+  value_serializer:('v string_serializer);cache_operation_serializer:raw_cache_operation string_serializer;subscriber:raw_cache_operation Subscriber.t}
 
 (* Provisional: need to manage this explicitly, possibly within remote context? *)
 lwt connection = riak_connect_with_defaults "localhost" 8087
@@ -38,7 +38,7 @@ let subscriber_socket_address = Address.create ~transport:Transport.EPGM ~endpoi
 let publisher_socket_address = subscriber_socket_address
 
 
-let deserialize_raw_cache_operation (op:raw_cache_operation) key_serializer value_serializer =
+let deserialize_raw_cache_operation (op:raw_cache_operation) (key_serializer: 'k string_serializer) (value_serializer:'v string_serializer) =
  let key_from_string = Bin_prot_utils.make_from_string key_serializer in 
  let value_from_string = Bin_prot_utils.make_from_string value_serializer in
  match op with
@@ -56,11 +56,9 @@ let setup_subscriber (listener:('k, 'v) cache_operation -> unit) bucket (seriali
   let _ = Subscriber.subscribe subscriber ~topic:bucket ~f ~initial_state in subscriber
 
 let create ~(key_serializer:'k string_serializer) ~(value_serializer:'v string_serializer) ~(bucket:string) ?(listener=noop_listener) () =
-  let writer = bin_write_cache_operation key_serializer.write_fun value_serializer.write_fun in
-  let reader = bin_read_cache_operation key_serializer.read_fun value_serializer.read_fun in
   let cache_operation_serializer = Bin_prot_utils.create bin_read_raw_cache_operation bin_write_raw_cache_operation in
   let subscriber = setup_subscriber listener bucket cache_operation_serializer key_serializer value_serializer in
-  let cache = {connection;bucket;key_serializer;value_serializer;cache_operation_serializer;
+  let cache:('k, 'v) t = {connection;bucket;key_serializer;value_serializer;cache_operation_serializer;
   publisher=create_publisher publisher_socket_address cache_operation_serializer;subscriber} in cache
 
 let notify_listener cache (operation:raw_cache_operation) =
