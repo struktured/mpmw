@@ -13,4 +13,4 @@ val create : Config.t -> t
 val destroy : t -> unit
 
 (* Gets the configuaration associated with a context *)
-val config t -> Config.t
+val config : t -> Config.t
