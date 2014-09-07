@@ -1,13 +1,6 @@
-open ZMQ
 
-type t = context
+type t = {zmq_contex:ZMQ.context;config:Config.t}
 
-let ref_context = ref None
+let create config = {zmq_cont:xt=ZMQ.init();config}
 
-let rec get() = match (!ref_context) with 
-    Some c -> c  
-  | None -> (ref_context := Some (ZMQ.init());get())
-
-
-  (* add assert on ref_context = context or elim this arg *)
-let destroy context = ZMQ.term context; ref_context := None
+let destroy context = ZMQ.term context

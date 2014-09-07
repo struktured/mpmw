@@ -6,21 +6,19 @@ open Core.Std
 type ('a, 'b) t  = {context:Remote_context.t;requester:([`Req]) Socket.t; 
   request_serializer:('a string_serializer); response_serializer:('b string_serializer)}
 
-let get_context () = Remote_context.get()
-
 let create ~context ~address ~request_serializer 
   ~response_serializer = 
     let requester = Socket.create context req in
     let address_as_string = Address.string_of_address address in
     connect requester address_as_string;
-    let invoker = {context;requester;request_serializer;response_serializer} in
-    print_endline ("created remote invoker");invoker
+    let requester = {context;requester;request_serializer;response_serializer} in
+    print_endline ("created remote requester");requester
 
-let invoke invoker req = 
-  send invoker.requester (make_to_string invoker.request_serializer req);
-  let response = recv invoker.requester in (make_from_string invoker.response_serializer response)
+let request requester req = 
+  send requester.requester (make_to_string requester.request_serializer req);
+  let response = recv requester.requester in (make_from_string requester.response_serializer response)
 
-let destroy invoker = close invoker.requester
+let destroy requester = close requester.requester
 
 
 
