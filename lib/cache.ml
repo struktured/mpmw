@@ -21,7 +21,7 @@ type ('k,'v) listener = ('k,'v) cache_operation -> unit
 let noop_listener (o:('k, 'v) cache_operation) = ()
 let create_entry ~(key:'k) ~(value:'v) = {key;value}
 
-type ('k, 'v) cache = {connection:riak_connection; bucket:string; 
+type ('k, 'v) t = {connection:riak_connection; bucket:string; 
   publisher:raw_cache_operation Publisher.t;key_serializer:'k string_serializer;
   value_serializer:('v string_serializer);cache_operation_serializer:('k, 'v) cache_operation string_serializer;subscriber:raw_cache_operation Subscriber.t}
 
@@ -66,7 +66,7 @@ let create ~(key_serializer:'k string_serializer) ~(value_serializer:'v string_s
 let notify_listener cache (operation:raw_cache_operation) =
   Publisher.publish cache.publisher ~topic:cache.bucket ~data:operation
 
-let put (cache:('k,'v) cache) (key:'k) (value:'v) = 
+let put (cache:('k,'v) t) (key:'k) (value:'v) = 
   let serialized_key = make_to_string cache.key_serializer key in
   let serialized_value = make_to_string cache.value_serializer value in
   lwt result = riak_put cache.connection cache.bucket (Some serialized_key) serialized_value [] in
@@ -77,7 +77,7 @@ let put (cache:('k,'v) cache) (key:'k) (value:'v) =
       | Some prev_serialized_value -> Update (serialized_key, {old_value=prev_serialized_value;new_value=serialized_value}) in  
   notify_listener cache raw_cache_operation
 
-let get (cache:('k, 'v) cache) key =
+let get (cache:('k, 'v) t) key =
   let serialized_key = make_to_string cache.key_serializer key in
   lwt result = riak_get cache.connection cache.bucket serialized_key [] in 
   Lwt.return (match result with Some r -> 
