@@ -17,11 +17,13 @@ exception Invalid_topic_name of string
 
 let validate topic = if String.contains topic topic_delim || String.is_empty topic then raise (Invalid_topic_name topic) else () 
 
-let publish publisher ~topic ~data =
-  validate topic; 
-  let serialized_data = Bin_prot_utils.make_to_string publisher.serializer data in
+let publish_serialized publisher ~topic ~serialized_data =
   Lwt.ignore_result (Lwt_io.printl ("data: " ^ serialized_data));
   Socket.send publisher.publisher (topic ^ (Char.to_string topic_delim) ^ serialized_data)
+
+let publish publisher ~topic ~data =
+  let serialized_data = Bin_prot_utils.make_to_string publisher.serializer data in
+  publish_serialized publisher ~topic ~serialized_data
 
 let destroy publisher = ZMQ.Socket.close (Socket.to_socket publisher.publisher)
 
