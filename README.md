@@ -1,5 +1,12 @@
+
+
 mpmw
 ====
+
+##**Notice**##
+
+This project is currently defunct and may be rejuvenated with some twists, such as the use of the future api and protocol buffers. For now, consider using issuu/ocaml-zmq and/or struktured/riakc_ppx.
+
 
 Multipurpose middleware for ocaml to do serialization, distributed caching and high performance messaging. This is accomplished by leveraging the following
 three technologies in combination:
